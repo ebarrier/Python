@@ -1,0 +1,119 @@
+Lecture code 11.02.2016
+in Linux command line, launch bpython to write python code
+-------------
+fh = open("access.log")
+for line in fh:
+... print(line)
+
+for i in range (0, 10):
+...     print(i)
+
+-------------
+
+>>> fh = open("access.log")
+>>> line = fh.readline()
+>>> line
+'66.249.66.6 - - [07/Feb/2016:06:52:38 +0200] "GET /~jpoial/docs6/api/org/omg/DynamicAny//class-use_DynAnyStub.html HTTP/1.1" 404 559 "http://enos.itcollege.ee/~jpoial/docs6/api/index.html?org/omg/DynamicA
+ny//class-use_DynAnyStub.html" "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"\n'
+>>> source_timestamp, request, response, _, _, agent, _ = line.split("\"")
+>>> agent
+'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)'
+>>> request
+'GET /~jpoial/docs6/api/org/omg/DynamicAny//class-use_DynAnyStub.html HTTP/1.1'
+>>> method, path, protocol = request.split(" ")
+>>> method
+'GET'
+>>> protocol
+'HTTP/1.1'
+
+-------------
+>>> d = {}
+>>> type(d)
+<type 'dict'> #this is a dictionnary (a bit last hashmap in Java)
+>>> d["Windows"] = 1
+>>> d
+{'Windows': 1}
+>>> d["Linux"] = 1
+>>> d
+{'Windows': 1, 'Linux': 1}
+>>> d[5] = "tere"
+>>> d
+{'Windows': 1, 5: 'tere', 'Linux': 1}
+
+-------------
+
+#How to sort elements
+d["Linux"] = 5
+d["Mac"] = 7
+l = d.items() #makes a list of the dictionnary
+l.sorted(l, key = lambda t:t[1], reverse = True) #for Python3
+
+-------------
+
+
+fh = open("access.log")
+
+win = 0 #Windows connections
+total = 0 #Total connections
+
+for line in fh:
+    total = total + 1
+    try:
+        timestamp, request, response, _, _, agent, _ = line.split("\"")
+        method, path, protocol = request.split(" ")
+#        print "User visited URL: http://enos.itcollege.ee" + path
+#        print "agent:", agent
+#        print "--"
+    except ValueError:
+        pass
+#        print("Failed to parse", line)
+
+print "Total requests:", total
+
+-------------
+
+fh = open("access.log")
+
+win = 0 #Windows connections
+total = 0 #Total connections
+
+for line in fh:
+    total = total + 1
+    try:
+        timestamp, request, response, _, _, agent, _ = line.split("\"")
+        method, path, protocol = request.split(" ")
+        if "Windows" in agent:
+            win = win + 1
+    except ValueError:
+        pass
+
+print "Total requests:", total
+print "Requests from Windows:", win
+print "Windows percentage:", win * 100.00 / total, "%"
+print "Windows percentage: %.02f%%" % (win * 100.00 / total)
+
+-------------
+
+fh = open("access.log")
+
+keywords = "Windows", "Linux", "Mac"
+d = {"Windows":0, "Linux":0, "Mac":0}
+total = 0
+
+for line in fh:
+    total = total + 1
+    try:
+        timestamp, request, response, _, _, agent, _ = line.split("\"")
+        method, path, protocol = request.split(" ")
+        for keyword in keywords:
+            if keyword in agent:
+                d[keyword] = d[keyword] + 1
+    except ValueError:
+        pass
+
+print "Total requests:", total
+print d
+
+
+print "Total requests:", total
+

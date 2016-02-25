@@ -1,0 +1,3 @@
+import os will give the python code access to some os function such as filename,...
+
+urllib will remove the escape charaters in url to replace them by their real value.
