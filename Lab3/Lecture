@@ -1,0 +1,9 @@
+argparse takes arguments from the command line after the function name.
+
+stat: in UNIX, gives some stats of the files and folders of current directory
+
+UNIX time starts from 01.01.1970. Called also UNIX epoch.
+Nice commands ->from datetime import datetime
+dte=datetime.now()
+dte.strftime is userful
+
