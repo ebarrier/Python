@@ -72,7 +72,17 @@ for filename in os.listdir(args.path):
         except ValueError:
             pass # This will do nothing, needed due to syntax
 
+def humanize(bytes):
+    if bytes<1024:
+        return "%d B" % bytes
+    elif bytes<1024**2:
+        return "%.1f kB" % (bytes / 1024.0)
+    elif bytes < 1024**3:
+        return "%.1f MB" % (bytes / 1024.0**2)
+    else:
+        return "%.1f GB" % (bytes / 1024.0**3)
 
+print "\n"
 print "Total lines:", total
 print "\n"
 
@@ -80,7 +90,7 @@ print("Top 5 OSs")
 results = d.items()
 results.sort(key = lambda item:item[1], reverse=True)
 for keyword, hits in results[:5]: #shows the first 5 results
-    print keyword, "==>", hits, "(", hits * 100 / total, "%)"
+    print keyword, "==>", hits, "(",hits * 100 / total, "%)"
 print "\n"
 
 print("Top 5 visited urls")
@@ -88,7 +98,7 @@ if args.topurls:
     results = urls.items()
     results.sort(key = lambda item:item[1], reverse=True)
     for keyword, hits in results[:5]: #shows the first 5 results
-        print keyword, "==>", hits, "(", hits * 100 / total, "%)"
+        print keyword, "==>", hits, "(",hits * 100 / total, "%)"
 else:
     print "Sorry you have not asked to get this output\n"
 print "\n"
@@ -97,13 +107,12 @@ print("Top 5 visited users")
 results = users.items()
 results.sort(key = lambda item:item[1], reverse=True)
 for keyword, hits in results[:5]: #shows the first 5 results
-    print keyword, "==>", hits, "(", hits * 100 / total, "%)"
+    print keyword, "==>", hits, "(",hits * 100 / total, "%)"
 print "\n"
 
 print("Top 5 users bandwidth consumption")
 results = users.items()
 results.sort(key = lambda item:item[1], reverse=True)
 for user, transferred_bytes in results[:5]: #shows the first 5 results
-    print keyword, "==>", transferred_bytes / 1024, "MB"
+    print user, "==>", humanize(transferred_bytes)
 print "\n"
-
