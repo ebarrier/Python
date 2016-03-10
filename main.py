@@ -55,7 +55,7 @@ for filename in os.listdir(args.path):
                 ip_addresses[source_ip] = ip_addresses.get(source_ip, 0) + 1 # nicer than try-catch.
                 
                 cc = gi.country_code_by_addr(source_ip)
-                print source_ip, "resolves to ", cc
+                #print source_ip, "resolves to ", cc
                 countries[cc] = countries.get(cc, 0) + 1
 
             _, status_code, content_length, _ = response.split(" ")
@@ -92,17 +92,27 @@ from lxml import etree
 from lxml.cssselect import CSSSelector
 
 document =  etree.parse(open('BlankMap-World6.svg'))
- 
-sel = CSSSelector("#ee")
-for j in sel(document):
-    j.set("style", "fill:red")
-    # Remove styling from children
-    for i in j.iterfind("{http://www.w3.org/2000/svg}path"):
-        i.attrib.pop("class", "")
- 
+
+max_hits = max(countries.values())
+print("country with max amount of hits:", max_hits)
+print countries
+
+for country_code, hits in countries.items():
+    if not country_code: continue # Skip localhost, sattelite phones, etc
+    print country_code, hex(hits * 255 / max_hits)[2:] # 2: skips 0x of hexadecimal number
+    sel = CSSSelector("#" + country_code.lower())
+    for j in sel(document):
+        #line below can be better written: j.set("style", "fill:#%02x0000" % hits * 255 / max_hits)
+        red = hits * 255 / max_hits
+        j.set("style", "fill:#" + hex(hits * 255 / max_hits)[2:] + "0000")
+        # Remove styling from children
+        for i in j.iterfind("{http://www.w3.org/2000/svg}path"):
+            i.attrib.pop("class", "")
+
+
 with open("highlighted.svg", "w") as fh:
     fh.write(etree.tostring(document))
-
+    
 def humanize(bytes):
     if bytes<1024:
         return "%d B" % bytes
