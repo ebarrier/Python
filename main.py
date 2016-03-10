@@ -1,18 +1,22 @@
 import argparse
+import GeoIP
 import gzip
 import os
 import urllib
  
+
 # Following is the directory with log files,
 # On Windows substitute it where you downloaded the files
 parser = argparse.ArgumentParser(description='Apache2 log parser.')
 
 parser.add_argument('--path', default="/home/ebarrier/logs", help='Path to Apache2 log files')
 parser.add_argument('--topurls', help="Find top URL-s", action='store_true')
-parser.add_argument('--geoip', help ="Resolve IP-s to country codes", action='store_true')
+parser.add_argument('--geoip', help ="Path to file to resolve IPs to country codes", action='store_true', default='/usr/share/GeoIP/GeoIP.dat')
 parser.add_argument('--verbose', help="Let's chat", action="store_true")
 
 args = parser.parse_args()
+
+gi = GeoIP.open(args.geoip, GeoIP.GEOIP_MEMORY_CACHE) #download list of countries with their IPs
 print "We are expecting logs from:", args.path
 print "Do we want top URL-s?", args.topurls
 
@@ -21,6 +25,7 @@ d = {} # Curly braces define empty dictionary
 urls={} #dictionary for urls
 users={} #dictionary for users
 ip_addresses={} #Ips
+countries={} #list of countries
 
 total = 0
 
@@ -29,6 +34,7 @@ for filename in os.listdir(args.path):
     if not filename.startswith("access.log"):
         continue
     if filename.endswith(".gz"):
+        continue # Skips .gz files to save time in processing
         fh = gzip.open(os.path.join(args.path, filename))
     if args.verbose:
         print "Parsing:", filename
@@ -45,13 +51,13 @@ for filename in os.listdir(args.path):
                                         #It cleans the escape characters. In our case it is used to display well the ~.
             
             source_ip, _, _, timestamp = source_timestamp.split(" ", 3) #3 is the number of separators counted for the split.
-            print "Request came from:", source_ip, "When:", timestamp
-            
-            try:
-                ip_addresses[source_ip] = ip_addresses[source_ip] + 1
-            except:
-                ip_addresses[source_ip] = 1
-            
+            if not ":" in source_ip: #Skips the ipv6 addresses in the count            
+                ip_addresses[source_ip] = ip_addresses.get(source_ip, 0) + 1 # nicer than try-catch.
+                
+                cc = gi.country_code_by_addr(source_ip)
+                print source_ip, "resolves to ", cc
+                countries[cc] = countries.get(cc, 0) + 1
+
             _, status_code, content_length, _ = response.split(" ")
             content_length = int(content_length) #converts the variable into integer
             
@@ -64,14 +70,14 @@ for filename in os.listdir(args.path):
                 except:
                     users[user] = 1
 
-#to count the urls
+            #to count the urls
             url = "httl://enos.itcollege.ee" + path
             try:
                 urls[url] = urls[url] + 1
             except:
                 urls[url] = 1
 
-#to count the OSs
+            #to count the OSs
             for keyword in keywords:
                 if keyword in agent:
                     try:
@@ -81,6 +87,21 @@ for filename in os.listdir(args.path):
                     break # Stop searching for other keywords
         except ValueError:
             pass # This will do nothing, needed due to syntax
+
+from lxml import etree
+from lxml.cssselect import CSSSelector
+
+document =  etree.parse(open('BlankMap-World6.svg'))
+ 
+sel = CSSSelector("#ee")
+for j in sel(document):
+    j.set("style", "fill:red")
+    # Remove styling from children
+    for i in j.iterfind("{http://www.w3.org/2000/svg}path"):
+        i.attrib.pop("class", "")
+ 
+with open("highlighted.svg", "w") as fh:
+    fh.write(etree.tostring(document))
 
 def humanize(bytes):
     if bytes<1024:
@@ -125,4 +146,12 @@ results = users.items()
 results.sort(key = lambda item:item[1], reverse=True)
 for user, transferred_bytes in results[:5]: #shows the first 5 results
     print user, "==>", humanize(transferred_bytes)
+print "\n"
+
+print("Top IP addresses")
+results = ip_addresses.items()
+results.sort(key = lambda item:item[1], reverse=True)
+for source_ip, hits in results[:5]: #shows the first 5 results
+    #print "Gotcha:", gi.country_code_by_addr("194.126.115.18").lower()
+    print source_ip, "==>", hits, "(",hits * 100 / total, "%) " "==>", gi.country_code_by_addr(source_ip)
 print "\n"
