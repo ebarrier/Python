@@ -102,9 +102,9 @@ for country_code, hits in countries.items():
     print country_code, hex(hits * 255 / max_hits)[2:] # 2: skips 0x of hexadecimal number
     sel = CSSSelector("#" + country_code.lower())
     for j in sel(document):
-        #line below can be better written: j.set("style", "fill:#%02x0000" % hits * 255 / max_hits)
+        #line below can be another way written j.set("style", "fill:#" + hex(hits * 255 / max_hits)[2:] + "0000")
         red = hits * 255 / max_hits
-        j.set("style", "fill:#" + hex(hits * 255 / max_hits)[2:] + "0000")
+        j.set("style", "fill:#%02x%02x00" % (red, 255-red)) # from green to red through yellow
         # Remove styling from children
         for i in j.iterfind("{http://www.w3.org/2000/svg}path"):
             i.attrib.pop("class", "")
