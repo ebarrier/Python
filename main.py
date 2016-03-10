@@ -1,9 +1,10 @@
 import argparse
+import codecs #for Jinja
 import GeoIP
 import gzip
+from jinja2 import Environment, FileSystemLoader #This is the templating engine we use
 import os
 import urllib
- 
 
 # Following is the directory with log files,
 # On Windows substitute it where you downloaded the files
@@ -106,16 +107,15 @@ for country_code, hits in countries.items():
         red = hits * 255 / max_hits
         #j.set("style", "fill:#%02x%02x00" % (red, 255-red)) # from green to red through yellow
         #Instead of RGB, it is better to use hue saturation luma color coding (from 0 to 360).
-        j.set("style", "fill:hsl(%d, 90%%, 70%%);" % (120 - hits * 120 / max_hits))
+        j.set("style", "fill:hsl(%d, 90%%, 70%%);" % (120 + (0 * 120 / max_hits)))
 
         # Remove styling from children
         for i in j.iterfind("{http://www.w3.org/2000/svg}path"):
             i.attrib.pop("class", "")
 
-
 with open("highlighted.svg", "w") as fh:
     fh.write(etree.tostring(document))
-    
+
 def humanize(bytes):
     if bytes<1024:
         return "%d B" % bytes
@@ -125,6 +125,15 @@ def humanize(bytes):
         return "%.1f MB" % (bytes / 1024.0**2)
     else:
         return "%.1f GB" % (bytes / 1024.0**3)
+
+users = sorted(users.items(), key = lambda item:item[1], reverse=True)
+urls = sorted(urls.items(), key = lambda item:item[1], reverse=True)
+env = Environment(loader=FileSystemLoader(os.path.dirname(__file__)), trim_blocks=True)
+with codecs.open("output.html", "w", encoding="utf-8") as fh:
+    fh.write(env.get_template("report.html").render(locals())) #locals() is a dict which contains all above defined variables.
+                                                               #if variable is defined after after in the code, it is not taken into acccount
+#os.system("x-www-browser file://" + os.path.realpath("output.html") + " &")
+    
 
 print "\n"
 print "Total lines:", total
