@@ -104,7 +104,10 @@ for country_code, hits in countries.items():
     for j in sel(document):
         #line below can be another way written j.set("style", "fill:#" + hex(hits * 255 / max_hits)[2:] + "0000")
         red = hits * 255 / max_hits
-        j.set("style", "fill:#%02x%02x00" % (red, 255-red)) # from green to red through yellow
+        #j.set("style", "fill:#%02x%02x00" % (red, 255-red)) # from green to red through yellow
+        #Instead of RGB, it is better to use hue saturation luma color coding (from 0 to 360).
+        j.set("style", "fill:hsl(%d, 90%%, 70%%);" % (120 - hits * 120 / max_hits))
+
         # Remove styling from children
         for i in j.iterfind("{http://www.w3.org/2000/svg}path"):
             i.attrib.pop("class", "")
