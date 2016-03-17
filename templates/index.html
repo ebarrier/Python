@@ -8,7 +8,10 @@
     <p> These are the log files we can parse for you:</p>
     <ul>
        {% for filename in log_files %}
-          <li>{{ filename }}</li>
+          <li>
+            <a href="/report/?filename={{filename}}">{{ filename }}</a>
+            <p>Il faut chaud ici</p>
+          </li>
        {% endfor %}
     </ul>
   </body>

@@ -13,7 +13,7 @@ PROJECT_ROOT = os.path.dirname(__file__)
 # On Windows substitute it where you downloaded the files
 parser = argparse.ArgumentParser(description='Apache2 log parser.')
 
-parser.add_argument('--path', default="/home/ebarrier/Documents/Python", help='Path to Apache2 log files')
+parser.add_argument('--path', default="/home/ebarrier/Documents/Python/logs", help='Path to Apache2 log files')
 parser.add_argument('--topurls', help="Find top URL-s", action='store_true')
 parser.add_argument('--geoip', help ="Path to file to resolve IPs to country codes", action='store_true', default='/usr/share/GeoIP/GeoIP.dat')
 parser.add_argument('--verbose', help="Let's chat", action="store_true")
