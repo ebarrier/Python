@@ -55,8 +55,8 @@ class LogParser(object):
 
             if path.startswith("/~"):
                 #removes the first two characters and splits every / char.
-                user = path[2:].split("/")[0]
-                self.user_bytes[user] += content_length
+                username = path[2:].split("/")[0]
+                self.user_bytes[username] += content_length
 
             #to count the urls. With the Counter() function, we do not need the Try/Catch.
             self.urls[path] += 1 ##self.urls({path:1}) does the same

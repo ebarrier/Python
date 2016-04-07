@@ -19,34 +19,53 @@ parser.add_argument('--path', default="/home/ebarrier/Documents/Python/logs", he
 parser.add_argument('--topurls', help="Find top URL-s", action='store_true')
 parser.add_argument('--geoip', help ="Path to file to resolve IPs to country codes", action='store_true', default='/usr/share/GeoIP/GeoIP.dat')
 parser.add_argument('--verbose', help="Let's chat", action="store_true")
-parser.add_argument('--skip-compressed',
-    help="Skip compressed files", action="store_true")
+parser.add_argument('--skip-compressed', help="Skip compressed files", action="store_true")
 args = parser.parse_args()
 
 try:
     #download list of countries with their IPs
     gi = GeoIP.open(args.geoip, GeoIP.GEOIP_MEMORY_CACHE)
 except GeoIP.error:
-    print "Failed to open up GeoIP database, are you sure %s exists?" % os.path.realpath(args.geoip)
+    print "Failed to open up GeoIP database, it seems %s does not exist!" % os.path.realpath(args.geoip)
     exit(254)
+
 
 # Here we create an instance of the LogParser class
 # this object shall contain statistics for one run
 logparser = LogParser(gi, keywords = ("Windows", "Linux", "OS X"))
 
+file_handles = []
+
 for filename in os.listdir(args.path):
     if not filename.startswith("access."):
         continue
     if filename.endswith(".gz"):
-        continue # Skips .gz files to save time in processing
+        if args.skip_compressed:
+            continue # Skips .gz files to save time in processing
         fh = gzip.open(os.path.join(args.path, filename))
     else:
         fh = open(os.path.join(args.path, filename))
 
     if args.verbose:
         print "Parsing:", filename
+    file_handles.append(fh)
 
-    logparser.parse_file(fh)
+from threading import Thread
+
+class ParserThread(Thread):
+    def run(self):
+        while True:
+            try:
+                logparser.parse_file(file_handles.pop())
+            except IndexError:
+                break
+
+threads = [ParserThread() for j in range(0,4)] #Spawn four threads
+for thread in threads:
+    thread.daemon = True    
+    thread.start()
+for thread in threads: #Wait threads to finish
+    thread.join() #terminates a thread
 
 if not logparser.urls:
     print "No log entries!"

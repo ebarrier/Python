@@ -2,17 +2,19 @@
 <html>
   <head>
     <meta charset="utf-8"/>
+    <meta name="description" content="Introduction to this guy's website">
+    <title>Our awesome report</title>
+    <link rel="css/style.css" type="text/css"/>
+    <script type="text/javascript" src="js/main.js"></script>
   </head>
   <body>
-    <h1>Hello from Flask+Jinja</h1>
-    <p> These are the log files we can parse for you:</p>
+    <h1>Log files</h1>
     <ul>
-       {% for filename in log_files %}
-          <li>
-            <a href="/report/?filename={{filename}}">{{ filename }}</a>
-            <p>Il faut chaud ici</p>
-          </li>
-       {% endfor %}
+      {% for log_file in log_files %}
+        <li>
+          <a href="/report/?filename={{ log_file }}">{{ log_file }}</a>
+        </li>
+      {% endfor %}
     </ul>
   </body>
 </html>
