@@ -1,4 +1,5 @@
 import urllib
+from collections import Counter
 
 class LogParser(object):
 
@@ -14,12 +15,12 @@ class LogParser(object):
         """
         This function resets the counters of an LogParser instance
         """
-        self.total = 0           # Total number of log entries parsed
-        self.d = {}              # Hits per keyword
-        self.urls = {}           # Hits per URL
-        self.user_bytes = {}     # Bytes served per user
-        self.countries = {}      # Hits per country code
-        self.ip_addresses = {}   # Hits per source IP address
+        self.total = 0              # Total number of log entries parsed
+        self.d = Counter()          # Hits per keyword
+        self.urls = Counter()       # Hits per URL using the Counter instead of dictionnary
+        self.user_bytes = Counter() # Bytes served per user
+        self.countries = {}         # Hits per country code
+        self.ip_addresses = {}      # Hits per source IP address
 
     def parse_file(self, fh):
         for line in fh:
@@ -55,23 +56,14 @@ class LogParser(object):
             if path.startswith("/~"):
                 #removes the first two characters and splits every / char.
                 user = path[2:].split("/")[0]
-                try:
-                    self.user_bytes[user] = self.user_bytes[user] + content_length
-                except:
-                    self.user_bytes[user] = content_length
+                self.user_bytes[user] += content_length
 
-            #to count the urls
-            try:
-                self.urls[path] = self.urls[path] + 1
-            except:
-                self.urls[path] = 1
+            #to count the urls. With the Counter() function, we do not need the Try/Catch.
+            self.urls[path] += 1 ##self.urls({path:1}) does the same
 
             #to count the OSs
             for keyword in self.keywords:
                 if keyword in agent:
-                    try:
-                        self.d[keyword] = self.d[keyword] + 1
-                    except KeyError:
-                        self.d[keyword] = 1
+                    self.d[keyword] += 1
                     break # Stop searching for other keywords                                                       
                                                         
